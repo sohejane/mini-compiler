@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>soheng's mini compiler</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f3e5f5; /* Light purple pastel background */
+      color: #6a1b9a; /* Dark purple text */
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #output {
+      flex: 1;
+      border: 1px solid #b39ddb; /* Light purple border */
+      height: 50%;
+      overflow: auto;
+      background-color: #fff; /* Default background for output space (light mode) */
+      color: #6a1b9a; /* Text color in light mode */
+    }
+    #editor-container {
+      height: 50%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #toolbar {
+      display: flex;
+      justify-content: flex-start;
+      padding: 5px;
+      background-color: #e1bee7; /* Lighter purple toolbar background */
+    }
+    .toolbar-btn {
+      margin-left: 10px;
+      padding: 8px 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .run-btn {
+      background-color: #ab47bc; /* Pastel purple button */
+      color: white;
+    }
+    .save-btn {
+      background-color: #ab47bc; /* Slightly darker purple button */
+      color: white;
+    }
+    .theme-toggle-btn {
+      margin-right: auto; /* Push the toggle to the left */
+    }
+    .reset-btn {
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #6a1b9a; /* Default color for the reset icon */
+      font-size: 24px; /* Adjust size of the icon */
+      margin-left: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      box-sizing: border-box;
+      overflow: auto;
+      resize: none;
+      background-color: #f3e5f5; /* Light purple background for the textarea */
+      color: #6a1b9a; /* Dark purple text */
+    }
+
+    /* Dark theme */
+    body.dark-theme {
+      background-color: #2d2d2d;
+      color: #fff;
+    }
+    body.dark-theme #toolbar {
+      background-color: #ac7fb387;
+    }
+    body.dark-theme .run-btn {
+      background-color: #5e35b1;
+      color: white;
+    }
+    body.dark-theme .save-btn {
+      background-color: #5e35b1;
+      color: white;
+    }
+    body.dark-theme .theme-toggle-btn {
+      color: #ab47bc;
+    }
+
+    /* Dark theme adjustments for text and background */
+    body.dark-theme textarea {
+      background-color: #333;
+      color: #fff;
+    }
+
+    body.dark-theme #editor-container {
+      color: #fff;
+    }
+
+    body.dark-theme #output {
+      background-color: #333;
+      color: #fff;
+    }
+
+    #language-select {
+      background-color: #ba68c8; /* Light purple background */
+      color: #fff;            /* Darker purple text */
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 16px;
+      margin-left: 5px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    body.dark-theme #language-select {
+      background-color: #5e35b1; /* Darker purple for dark mode */
+      color: white;
+    }
+  </style>
+  <!-- Font Awesome for icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <iframe id="output"></iframe>
+
+  <div id="editor-container">
+    <div id="toolbar">
+      <select id="language-select" class="toolbar-btn">
+        <option value="html">HTML</option>
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="php">PHP</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+      </select>
+
+      <button class="toolbar-btn theme-toggle-btn" onclick="toggleTheme()">
+        <img src="https://i.imgur.com/QulpJwQ.png" alt="Sun" id="theme-icon" style="width: 20px; height: 20px;">
+      </button>
+      <button class="reset-btn" onclick="resetCode()">
+        <img src="https://i.imgur.com/c5sAii4.png" alt="Reset" style="width: 24px; height: 24px;">
+      </button>
+      <button class="toolbar-btn run-btn" onclick="runCode()">
+        <i class="fas fa-play"></i> Run
+      </button>
+      <button class="toolbar-btn save-btn" onclick="saveCode()">
+        <i class="fas fa-save"></i> Save
+      </button>
+    </div>
+    <textarea id="code" placeholder="Write your code here...">
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Hello, World!</h1>
+    <script>
+      alert("Hello from JS!");
+    </script>
+  </body>
+</html>
+    </textarea>
+  </div>
+
+  <script>
+    async function runCode() {
+      const code = document.getElementById('code').value;
+      const language = document.getElementById('language-select').value;
+      const outputFrame = document.getElementById('output');
+
+      if (language === 'html') {
+        // For HTML, render directly in the iframe
+        const isDark = document.body.classList.contains('dark-theme');
+        const style = isDark
+          ? `<style>body { background-color: #333; color: white; }</style>`
+          : '';
+        outputFrame.srcdoc = style + code;
+      } else {
+        // For other languages, use Piston API
+        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            language: language,
+            version: '*',
+            files: [{ content: code }],
+          }),
+        });
+
+        const result = await response.json();
+        outputFrame.srcdoc = `<pre style="color: ${
+          document.body.classList.contains('dark-theme') ? '#fff' : '#000'
+        }; background-color: ${
+          document.body.classList.contains('dark-theme') ? '#333' : '#fff'
+        }; padding: 10px;">${result.run.output}</pre>`;
+      }
+    }
+
+    function saveCode() {
+      const code = document.getElementById('code').value;
+      const blob = new Blob([code], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-code.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      body.classList.toggle('dark-theme');
+      const icon = document.getElementById('theme-icon');
+
+      if (body.classList.contains('dark-theme')) {
+        icon.src = "https://i.imgur.com/iYSdLh5.png"; // Moon icon for dark mode
+      } else {
+        icon.src = "https://i.imgur.com/QulpJwQ.png"; // Sun icon for light mode
+      }
+      const code = document.getElementById('code').value;
+      const isDark = document.body.classList.contains('dark-theme');
+
+      // Inject custom dark theme styles if night mode is active
+      const style = isDark
+        ? `<style>body { background-color: #333; color: white; }</style>`
+        : '';
+
+      document.getElementById('output').srcdoc = style + code;
+    }
+
+    function resetCode() {
+      document.getElementById('code').value = ''; // Clear the textarea for new code
+      document.getElementById('output').srcdoc = ''; // Clear the output iframe
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.key === 'Enter') {
+        runCode();
+      } else if (event.ctrlKey && event.key === 's') {
+        event.preventDefault(); // Prevents the default save behavior (browser save)
+        saveCode();
+      }
+    });
+  </script>
+</body>
+</html>
