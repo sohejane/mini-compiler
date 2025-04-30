@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" href="https://i.imgur.com/Cb6agMF.png" type="image/x-icon">
   <title>soheng's mini compiler</title>
+
+  <!-- CodeMirror CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/php/php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+  
   <style>
     body {
       margin: 0;
@@ -13,33 +25,40 @@
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      background-color: #f3e5f5; /* Light purple pastel background */
-      color: #6a1b9a; /* Dark purple text */
+      background-color: #f3e5f5;
+      color: #6a1b9a;
       transition: background-color 0.3s, color 0.3s;
     }
+
     #output {
       flex: 1;
-      border: 1px solid #b39ddb; /* Light purple border */
+      border: 1px solid #b39ddb;
       height: 50%;
       overflow: auto;
-      background-color: #fff; /* Default background for output space (light mode) */
-      color: #6a1b9a; /* Text color in light mode */
+      background-color: #fff;
+      color: #6a1b9a;
     }
+
     #editor-container {
-  height: calc(65vh - 55px); 
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+      height: calc(65vh - 55px);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
     #toolbar {
       display: flex;
+      position: fixed;
+      z-index: 100;
+      width: 100%;
       justify-content: flex-start;
       padding: 8px;
-      background-color: #e1bee7; /* Lighter purple toolbar background */
+      background-color: #e1bee7;
     }
+
     .toolbar-btn {
       margin-left: 5px;
-      padding: 8px 8px;
+      padding: 8px;
       font-size: 16px;
       font-weight: bold;
       border: none;
@@ -48,72 +67,122 @@
       display: flex;
       align-items: center;
     }
-    .run-btn {
-      background-color: #ab47bc; /* Pastel purple button */
-      color: white;
-    }
+
     .save-btn {
-      background-color: #ab47bc; /* Slightly darker purple button */
+      background-color: #ab47bc;
       color: white;
+      margin-right: 20px;
     }
+    
+    .run-btn {
+      background-color: #ab47bc;
+      color: white;
+      margin-right: 3px;
+    }
+
     .theme-toggle-btn {
-      margin-right: auto; /* Push the toggle to the left */
+      margin-right: auto;
     }
+
     .reset-btn {
       cursor: pointer;
       border: none;
       background: none;
-      color: #6a1b9a; /* Default color for the reset icon */
-      font-size: 23px; /* Adjust size of the icon */
-      margin-left: 5px;
+      color: #6a1b9a;
+      font-size: 23px;
+      margin-left: 3px;
     }
-textarea {
-  width: 100%;
-  height: 100%; /* Ensure the textarea takes up all available space */
-  padding: 10px;
-  font-family: monospace;
-  font-size: 14px;
-  box-sizing: border-box;
-  overflow: auto;
-  resize: none;
-      background-color: #f3e5f5; /* Light purple background for the textarea */
-      color: #6a1b9a; /* Dark purple text */
-    }
+    
+    /* Override the background for all languages in both light and dark themes */
+.CodeMirror {
+  height: 100%;
+      font-size: 14px;
+      border: none;
+  background-color: #f3e5f5 !important; /* Default light theme background */
+  color: #6a1b9a !important; /* Default text color */
+  margin-top: 55px;
+}
+
+/* Dark theme background for all languages */
+body.dark-theme .CodeMirror {
+  background-color: #2d2d2d !important; /* Dark theme background */
+  color: #fff !important; /* Dark theme text color */
+}
+
+/* Override for C language mode */
+.CodeMirror-c {
+  background-color: #f3e5f5 !important; /* Light theme background */
+}
+
+/* Dark theme background for C language mode */
+body.dark-theme .CodeMirror-c {
+  background-color: #2d2d2d !important; /* Dark theme background */
+  color: #fff;
+}
+
+/* Override for C++ language mode */
+.CodeMirror-cpp {
+  background-color: #f3e5f5 !important; /* Light theme background */
+}
+
+/* Dark theme background for C++ language mode */
+body.dark-theme .CodeMirror-cpp {
+  background-color: #2d2d2d !important; /* Dark theme background */
+}
 
     /* Dark theme */
     body.dark-theme {
       background-color: #2d2d2d;
       color: #fff;
     }
+
     body.dark-theme #toolbar {
-      background-color: #ac7fb387;
+      background-color: #ac7fb3;
     }
-    body.dark-theme .run-btn {
-      background-color: #5e35b1;
-      color: white;
-    }
+
+    body.dark-theme .run-btn,
     body.dark-theme .save-btn {
       background-color: #5e35b1;
-      color: white;
     }
+
     body.dark-theme .theme-toggle-btn {
       color: #ab47bc;
-    }
-
-    /* Dark theme adjustments for text and background */
-    body.dark-theme textarea {
-      background-color: #ac7fb35d;
-      color: #fff;
-    }
-
-    body.dark-theme #editor-container {
-      color: #fff;
     }
 
     body.dark-theme #output {
       background-color: #333;
       color: #fff;
     }
+
+    body.dark-theme .CodeMirror {
+      background-color: #ac7fb31e !important;
+      color: #fff !important;
+    }
+    
+    /* Adjust line numbers styles */
+  .CodeMirror-gutter {
+    background-color: transparent;
+    width: 0px /* Reduce the space occupied by the line numbers */
+  }
+
+  .CodeMirror-linenumber {
+    padding-left: 0px; /* Move the line numbers a bit to the left */
+    color: #6a1b9a; /* Default color for line numbers */
+  }
+
+  /* Dark theme line numbers */
+  body.dark-theme .CodeMirror-linenumber {
+    color: #fff; /* White line numbers in dark theme */
+  }
+
+  /* Optional: Adjust gutter background color */
+  .CodeMirror-gutter {
+    background-color: #f3e5f5; /* Light theme background */
+  }
+
+  body.dark-theme .CodeMirror-gutter {
+    background-color: #ac7fb35d; /* Dark theme background */
+  }
 
     #language-select {
       background-color: #ba68c8; /* Light purple background */
@@ -130,12 +199,10 @@ textarea {
     }
 
     body.dark-theme #language-select {
-      background-color: #5e35b1; /* Darker purple for dark mode */
+      background-color: #5e35b1;
       color: white;
     }
   </style>
-  <!-- Font Awesome for icons -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -164,97 +231,96 @@ textarea {
         <i class="fas fa-save"></i> Save
       </button>
     </div>
-    <textarea id="code" placeholder="Write your code here...">
-</textarea>
+    <div id="editor"></div>
   </div>
 
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <script>
-    async function runCode() {
-  const code = document.getElementById('code').value;
-  const language = document.getElementById('language-select').value;
-  const outputFrame = document.getElementById('output');
-
-  if (language === 'html') {
-    const isDark = document.body.classList.contains('dark-theme');
-    const style = isDark
-      ? `<style>body { background-color: #333; color: white; }</style>`
-      : '';
-    outputFrame.srcdoc = style + code;
-  } else {
-    let fileName = 'code';
+    let editor = CodeMirror(document.getElementById('editor'), {
+  lineNumbers: true,
+  mode: "htmlmixed",
+  theme: "default",
+  value: localStorage.getItem('savedCode') || '',
+  lineWrapping: true,  // Enable word wrapping
+});
     
-    // Set file name extensions for C, C++, and PHP
-    if (language === 'c') {
-      fileName = 'code.c';
-    } else if (language === 'cpp') {
-      fileName = 'code.cpp';
-    } else if (language === 'php') {
-      fileName = 'code.php';
-    } else if (language === 'python') {
-      fileName = 'code.py'; // Python file extension
+
+    function updateMode() {
+      const lang = document.getElementById('language-select').value;
+      const modes = {
+        html: 'htmlmixed',
+        python: 'python',
+        php: 'php',
+        c: 'text/x-csrc',
+        cpp: 'text/x-c++src'
+      };
+      editor.setOption("mode", modes[lang]);
     }
 
-    // For other languages, use the Piston API
-    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        language: language,
-        version: '*',
-        files: [{ name: fileName, content: code }],
-      }),
-    });
+    document.getElementById('language-select').addEventListener('change', updateMode);
 
-    const result = await response.json();
-    const output = result.run.output || result.run.error;
+    async function runCode() {
+      const code = editor.getValue();
+      const language = document.getElementById('language-select').value;
+      const outputFrame = document.getElementById('output');
 
-    // Display the result in the iframe with proper styling
-    outputFrame.srcdoc = `<pre style="color: ${
-      document.body.classList.contains('dark-theme') ? '#fff' : '#000'
-    }; background-color: ${
-      document.body.classList.contains('dark-theme') ? '#333' : '#fff'
-    }; padding: 10px;">${output}</pre>`;
-  }
-}
+      if (language === 'html') {
+        const isDark = document.body.classList.contains('dark-theme');
+        const style = isDark ? `<style>body { background-color: #333; color: white; }</style>` : '';
+        outputFrame.srcdoc = style + code;
+      } else {
+        let fileName = 'code';
+        if (language === 'c') fileName = 'code.c';
+        else if (language === 'cpp') fileName = 'code.cpp';
+        else if (language === 'php') fileName = 'code.php';
+        else if (language === 'python') fileName = 'code.py';
+
+        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            language: language,
+            version: '*',
+            files: [{ name: fileName, content: code }],
+          }),
+        });
+
+        const result = await response.json();
+        const output = result.run.output || result.run.error;
+        outputFrame.srcdoc = `<pre style="color: ${
+          document.body.classList.contains('dark-theme') ? '#fff' : '#000'
+        }; background-color: ${
+          document.body.classList.contains('dark-theme') ? '#333' : '#fff'
+        }; padding: 10px;">${output}</pre>`;
+      }
+    }
 
     function saveCode() {
-   const code = document.getElementById('code').value;
-   const fileName = prompt("Enter a name for your file:", "my-code.html");
-   if (fileName) {
-     const blob = new Blob([code], { type: 'text/html' });
-     const url = URL.createObjectURL(blob);
-     const a = document.createElement('a');
-     a.href = url;
-     a.download = fileName;
-     a.click();
-     URL.revokeObjectURL(url);
-   }
-} 
+      const code = editor.getValue();
+      const fileName = prompt("Enter a name for your file:", "my-code.html");
+      if (fileName) {
+        const blob = new Blob([code], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
 
     function toggleTheme() {
-      const body = document.body;
-      body.classList.toggle('dark-theme');
-      const icon = document.getElementById('theme-icon');
-
-      if (body.classList.contains('dark-theme')) {
-        icon.src = "https://i.imgur.com/iYSdLh5.png"; // Moon icon for dark mode
-      } else {
-        icon.src = "https://i.imgur.com/QulpJwQ.png"; // Sun icon for light mode
-      }
-      const code = document.getElementById('code').value;
-      const isDark = document.body.classList.contains('dark-theme');
-
-      // Inject custom dark theme styles if night mode is active
-      const style = isDark
-        ? `<style>body { background-color: #333; color: white; }</style>`
-        : '';
-
-      document.getElementById('output').srcdoc = style + code;
+      document.body.classList.toggle('dark-theme');
+      document.getElementById('theme-icon').src =
+        document.body.classList.contains('dark-theme')
+          ? "https://i.imgur.com/iYSdLh5.png"
+          : "https://i.imgur.com/QulpJwQ.png";
+      editor.setOption("theme", document.body.classList.contains('dark-theme') ? "dracula" : "default");
     }
 
     function resetCode() {
-      document.getElementById('code').value = '';
-      document.getElementById('output').srcdoc = ''; 
+      editor.setValue('');
+      document.getElementById('output').srcdoc = '';
     }
 
     // Keyboard Shortcuts
@@ -262,24 +328,18 @@ textarea {
       if (event.ctrlKey && event.key === 'Enter') {
         runCode();
       } else if (event.ctrlKey && event.key === 's') {
-        event.preventDefault(); 
+        event.preventDefault();
         saveCode();
       }
     });
 
-    // Save code to localStorage when user types
-document.getElementById('code').addEventListener('input', function () {
-  localStorage.setItem('savedCode', this.value);
-});
+    // Save on typing
+    editor.on('change', () => {
+      localStorage.setItem('savedCode', editor.getValue());
+    });
 
-// Load saved code on page load
-window.addEventListener('DOMContentLoaded', function () {
-  const saved = localStorage.getItem('savedCode');
-  if (saved) {
-    document.getElementById('code').value = saved;
-  }
-});
-    
+    // Set initial language mode
+    updateMode();
   </script>
 </body>
-  </html>
+</html>
