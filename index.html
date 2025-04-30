@@ -258,6 +258,20 @@
         saveCode();
       }
     });
+
+    // Save code to localStorage when user types
+document.getElementById('code').addEventListener('input', function () {
+  localStorage.setItem('savedCode', this.value);
+});
+
+// Load saved code on page load
+window.addEventListener('DOMContentLoaded', function () {
+  const saved = localStorage.getItem('savedCode');
+  if (saved) {
+    document.getElementById('code').value = saved;
+  }
+});
+    
   </script>
 </body>
 </html>
