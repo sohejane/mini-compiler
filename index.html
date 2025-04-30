@@ -144,8 +144,7 @@
   <div id="editor-container">
     <div id="toolbar">
       <select id="language-select" class="toolbar-btn">
-        <option value="html">HTML</option>
-        <option value="javascript">JavaScript</option>
+        <option value="html">HTML/CSS/JS</option>
         <option value="python">Python</option>
         <option value="php">PHP</option>
         <option value="c">C</option>
@@ -166,10 +165,6 @@
       </button>
     </div>
     <textarea id="code" placeholder="Write your code here...">
-<h1>Hello, World!</h1>
-<script>
-  alert("Hello from JS!");
-</script>
 </textarea>
   </div>
 
@@ -180,7 +175,6 @@
       const outputFrame = document.getElementById('output');
 
       if (language === 'html') {
-        // For HTML, render directly in the iframe
         const isDark = document.body.classList.contains('dark-theme');
         const style = isDark
           ? `<style>body { background-color: #333; color: white; }</style>`
@@ -240,8 +234,8 @@
     }
 
     function resetCode() {
-      document.getElementById('code').value = ''; // Clear the textarea for new code
-      document.getElementById('output').srcdoc = ''; // Clear the output iframe
+      document.getElementById('code').value = '';
+      document.getElementById('output').srcdoc = ''; 
     }
 
     // Keyboard Shortcuts
@@ -249,7 +243,7 @@
       if (event.ctrlKey && event.key === 'Enter') {
         runCode();
       } else if (event.ctrlKey && event.key === 's') {
-        event.preventDefault(); // Prevents the default save behavior (browser save)
+        event.preventDefault(); 
         saveCode();
       }
     });
@@ -269,4 +263,4 @@ window.addEventListener('DOMContentLoaded', function () {
     
   </script>
 </body>
-  </html>
+</html>
