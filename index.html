@@ -170,36 +170,52 @@ textarea {
 
   <script>
     async function runCode() {
-      const code = document.getElementById('code').value;
-      const language = document.getElementById('language-select').value;
-      const outputFrame = document.getElementById('output');
+  const code = document.getElementById('code').value;
+  const language = document.getElementById('language-select').value;
+  const outputFrame = document.getElementById('output');
 
-      if (language === 'html') {
-        const isDark = document.body.classList.contains('dark-theme');
-        const style = isDark
-          ? `<style>body { background-color: #333; color: white; }</style>`
-          : '';
-        outputFrame.srcdoc = style + code;
-      } else {
-        // For other languages, use Piston API
-        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            language: language,
-            version: '*',
-            files: [{ content: code }],
-          }),
-        });
-
-        const result = await response.json();
-        outputFrame.srcdoc = `<pre style="color: ${
-          document.body.classList.contains('dark-theme') ? '#fff' : '#000'
-        }; background-color: ${
-          document.body.classList.contains('dark-theme') ? '#333' : '#fff'
-        }; padding: 10px;">${result.run.output}</pre>`;
-      }
+  if (language === 'html') {
+    const isDark = document.body.classList.contains('dark-theme');
+    const style = isDark
+      ? `<style>body { background-color: #333; color: white; }</style>`
+      : '';
+    outputFrame.srcdoc = style + code;
+  } else {
+    let fileName = 'code';
+    
+    // Set file name extensions for C, C++, and PHP
+    if (language === 'c') {
+      fileName = 'code.c';
+    } else if (language === 'cpp') {
+      fileName = 'code.cpp';
+    } else if (language === 'php') {
+      fileName = 'code.php';
+    } else if (language === 'python') {
+      fileName = 'code.py'; // Python file extension
     }
+
+    // For other languages, use the Piston API
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: language,
+        version: '*',
+        files: [{ name: fileName, content: code }],
+      }),
+    });
+
+    const result = await response.json();
+    const output = result.run.output || result.run.error;
+
+    // Display the result in the iframe with proper styling
+    outputFrame.srcdoc = `<pre style="color: ${
+      document.body.classList.contains('dark-theme') ? '#fff' : '#000'
+    }; background-color: ${
+      document.body.classList.contains('dark-theme') ? '#333' : '#fff'
+    }; padding: 10px;">${output}</pre>`;
+  }
+}
 
     function saveCode() {
    const code = document.getElementById('code').value;
@@ -266,4 +282,4 @@ window.addEventListener('DOMContentLoaded', function () {
     
   </script>
 </body>
-</html>
+  </html>
