@@ -514,6 +514,7 @@
           document.body.classList.contains('dark-theme') ? '#333' : '#fff'
         }; padding: 10px;">${output}</pre>`;
       }
+      document.getElementById('hamburger-dropdown').style.display = 'none';
     }
 
     function saveCode() {
@@ -528,6 +529,7 @@
         a.click();
         URL.revokeObjectURL(url);
       }
+      document.getElementById('hamburger-dropdown').style.display = 'none';
     }
 
     function toggleTheme() {
