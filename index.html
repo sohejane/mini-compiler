@@ -492,61 +492,86 @@
     document.getElementById('language-select').addEventListener('change', updateMode);
 
      async function runCode() {
-      const code = editor.getValue();
-      const language = document.getElementById('language-select').value;
-      const outputFrame = document.getElementById('output');
+  const code = editor.getValue();
+  const language = document.getElementById('language-select').value;
+  const outputFrame = document.getElementById('output');
+
+  if (language === 'html') {
+    const isDark = document.body.classList.contains('dark-theme');
     
-      if (language === 'html') {
-        const isDark = document.body.classList.contains('dark-theme');
-        let defaultStyles = `
-          <style>
-            body { 
-              font-family: "Times New Roman", arial;
-              background-color: ${isDark ? '#333' : '#fff'}; 
-              color: ${isDark ? '#fff' : '#000'}; 
-              margin: 20px auto auto 15px; 
-              text-align: justified;
-              margin-top: 20px;
-              font-size: 18px;
-            }
-          </style>
-        `;
-        const htmlContent = `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>${defaultStyles}</head>
-          <body>${code}</body>
-          </html>
-        `;
-        outputFrame.srcdoc = htmlContent;
+    // Create a minimal set of default styles that won't override user styles
+    let defaultStyles = `
+      <style>
+        body { 
+          font-family: "Times New Roman", arial;
+          background-color: ${isDark ? '#333' : '#fff'}; 
+          color: ${isDark ? '#fff' : '#000'}; 
+          padding-top: 40px; /* Add padding to the top instead of margin */
+          font-size: 18px;
+        }
+        /* This ensures text doesn't stick to the edges */
+        body:not(:has(div, p, h1, h2, h3, h4, h5, h6, section, article)) {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+      </style>
+    `;
+    
+    // Find if the code contains any <style> tags
+    const hasStyleTag = /<style[^>]*>[\s\S]*?<\/style>/i.test(code);
+    const hasHeadTag = /<head[^>]*>[\s\S]*?<\/head>/i.test(code);
+    
+    let htmlContent;
+    
+    if (code.includes('<!DOCTYPE html>') || code.includes('<html')) {
+      // If the code is a complete HTML document
+      if (hasHeadTag) {
+        // Insert default styles into the existing head tag
+        htmlContent = code.replace(/<head[^>]*>/, match => `${match}\n${defaultStyles}\n`);
       } else {
-        let fileName = 'code';
-        if (language === 'c') fileName = 'code.c';
-        else if (language === 'cpp') fileName = 'code.cpp';
-        else if (language === 'php') fileName = 'code.php';
-        else if (language === 'python') fileName = 'code.py';
-    
-        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            language: language,
-            version: '*',
-            files: [{ name: fileName, content: code }],
-          }),
-        });
-    
-        const result = await response.json();
-        const output = result.run.output || result.run.error;
-        outputFrame.srcdoc = `
-          <pre style="color: ${
-            document.body.classList.contains('dark-theme') ? '#fff' : '#000'
-          }; background-color: ${
-            document.body.classList.contains('dark-theme') ? '#333' : '#fff'
-          }; padding: 10px;">${output}</pre>`;
+        // Add head with default styles
+        htmlContent = code.replace(/<html[^>]*>/, match => `${match}\n<head>${defaultStyles}</head>\n`);
       }
-      document.getElementById('hamburger-dropdown').style.display = 'none';
+    } else {
+      // Wrap the code in a complete HTML document
+      htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>${defaultStyles}</head>
+        <body>${code}</body>
+        </html>
+      `;
     }
+    
+    outputFrame.srcdoc = htmlContent;
+  } else {
+    let fileName = 'code';
+    if (language === 'c') fileName = 'code.c';
+    else if (language === 'cpp') fileName = 'code.cpp';
+    else if (language === 'php') fileName = 'code.php';
+    else if (language === 'python') fileName = 'code.py';
+
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: language,
+        version: '*',
+        files: [{ name: fileName, content: code }],
+      }),
+    });
+
+    const result = await response.json();
+    const output = result.run.output || result.run.error;
+    outputFrame.srcdoc = `
+      <pre style="color: ${
+        document.body.classList.contains('dark-theme') ? '#fff' : '#000'
+      }; background-color: ${
+        document.body.classList.contains('dark-theme') ? '#333' : '#fff'
+      }; padding: 40px 10px 10px 10px;">${output}</pre>`; /* Increased top padding to 40px */
+  }
+  document.getElementById('hamburger-dropdown').style.display = 'none';
+}
 
     function saveCode() {
       const code = editor.getValue();
