@@ -506,13 +506,13 @@
           font-family: "Times New Roman", arial;
           background-color: ${isDark ? '#333' : '#fff'}; 
           color: ${isDark ? '#fff' : '#000'}; 
-          padding-top: 40px; /* Add padding to the top instead of margin */
+          padding-top: 20px; /* Add padding to the top instead of margin */
           font-size: 18px;
         }
         /* This ensures text doesn't stick to the edges */
         body:not(:has(div, p, h1, h2, h3, h4, h5, h6, section, article)) {
-          padding-left: 15px;
-          padding-right: 15px;
+          padding-left: 20px;
+          padding-right: 20px;
         }
       </style>
     `;
@@ -568,7 +568,7 @@
         document.body.classList.contains('dark-theme') ? '#fff' : '#000'
       }; background-color: ${
         document.body.classList.contains('dark-theme') ? '#333' : '#fff'
-      }; padding: 40px 10px 10px 10px;">${output}</pre>`; /* Increased top padding to 40px */
+      }; padding: 20px 10px 10px 10px;">${output}</pre>`; /* Increased top padding to 40px */
   }
   document.getElementById('hamburger-dropdown').style.display = 'none';
 }
