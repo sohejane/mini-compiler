@@ -498,7 +498,7 @@
     
       if (language === 'html') {
         const isDark = document.body.classList.contains('dark-theme');
-        const defaultStyles = `
+        let defaultStyles = `
           <style>
             body { 
               font-family: "Times New Roman", arial;
